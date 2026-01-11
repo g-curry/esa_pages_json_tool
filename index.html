@@ -3,25 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JSON格式化工具 | ESA Pages参赛作品</title>
+    <title>✨ JSON格式化工具 | ESA Pages参赛作品</title>
     <style>
+        /* 全局CSS变量 - 支持主题切换 */
+        :root {
+            --primary-color: #409eff;
+            --primary-light: #66b1ff;
+            --primary-dark: #337ecc;
+            --danger-color: #f56c6c;
+            --danger-light: #f78989;
+            --success-color: #67c23a;
+            --success-light: #85ce61;
+            --bg-color: #f5f7fa;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-secondary: #666666;
+            --text-placeholder: #999999;
+            --border-color: #dcdfe6;
+            --border-hover: #409eff;
+            --shadow: 0 2px 10px rgba(0,0,0,0.1);
+            --shadow-hover: 0 4px 20px rgba(64, 158, 255, 0.15);
+            --transition: all 0.3s ease;
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #54a0ff;
+            --primary-light: #7baef7;
+            --primary-dark: #2f7ed8;
+            --danger-color: #f08080;
+            --danger-light: #f49898;
+            --success-color: #70c050;
+            --success-light: #88d070;
+            --bg-color: #1a1a2e;
+            --card-bg: #252540;
+            --text-main: #e0e0e0;
+            --text-secondary: #a0a0c0;
+            --text-placeholder: #707090;
+            --border-color: #353555;
+            --border-hover: #54a0ff;
+            --shadow: 0 2px 10px rgba(0,0,0,0.3);
+            --shadow-hover: 0 4px 20px rgba(84, 160, 255, 0.2);
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: "Microsoft Yahei", monospace;
+            font-family: "Microsoft Yahei", "Consolas", monospace;
         }
+
         body {
-            background-color: #f5f7fa;
+            background-color: var(--bg-color);
+            background-image: linear-gradient(120deg, var(--bg-color), var(--bg-color) 80%, rgba(64, 158, 255, 0.05));
             padding: 20px;
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
+            color: var(--text-main);
+            transition: var(--transition);
+            min-height: 100vh;
         }
+
+        /* 顶部标题栏 */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .title {
+            font-size: 28px;
+            font-weight: 600;
+            background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: 1px;
+            position: relative;
+        }
+
+        .title::after {
+            content: "";
+            position: absolute;
+            bottom: -6px;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-color), transparent);
+            border-radius: 3px;
+        }
+
+        .theme-switch {
+            padding: 8px 16px;
+            border-radius: 20px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: var(--transition);
+        }
+
+        .theme-switch:hover {
+            border-color: var(--border-hover);
+            box-shadow: var(--shadow-hover);
+        }
+
+        /* 主容器 */
         .container {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 24px;
         }
+
         @media (min-width: 768px) {
             .container {
                 flex-direction: row;
@@ -30,158 +128,430 @@
                 flex: 1;
             }
         }
-        .title {
-            text-align: center;
-            color: #333;
-            margin-bottom: 20px;
-            font-size: 24px;
-        }
+
+        /* 卡片样式 */
         .card {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
         }
-        h3 {
-            color: #409eff;
-            margin-bottom: 10px;
+
+        .card:hover {
+            box-shadow: var(--shadow-hover);
+            transform: translateY(-2px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .card-title {
             font-size: 18px;
+            color: var(--primary-color);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
+
+        .char-count {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* 文本框样式 */
         textarea {
             width: 100%;
-            height: 300px;
-            padding: 10px;
-            border: 1px solid #dcdfe6;
-            border-radius: 4px;
+            height: 350px;
+            padding: 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
             font-size: 14px;
-            line-height: 1.5;
+            line-height: 1.6;
             resize: vertical;
             outline: none;
+            background-color: var(--card-bg);
+            color: var(--text-main);
+            transition: var(--transition);
+            font-family: "Consolas", monospace;
         }
+
         textarea:focus {
-            border-color: #409eff;
+            border-color: var(--border-hover);
+            box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.1);
         }
+
+        textarea::placeholder {
+            color: var(--text-placeholder);
+        }
+
+        /* 语法高亮容器 */
+        #jsonOutput {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-y: auto;
+        }
+
+        /* JSON语法高亮样式 */
+        .json-key { color: #e57373; }
+        .json-string { color: #66bb6a; }
+        .json-number { color: #81c784; }
+        .json-boolean { color: #4fc3f7; }
+        .json-null { color: #9575cd; }
+
+        /* 按钮组 */
         .btn-group {
             display: flex;
-            gap: 10px;
-            margin-top: 10px;
+            gap: 12px;
+            margin-top: 16px;
             flex-wrap: wrap;
         }
+
         button {
-            padding: 8px 16px;
+            padding: 10px 20px;
             border: none;
-            border-radius: 4px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 14px;
-            transition: all 0.2s;
+            font-weight: 500;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
+
         .btn-primary {
-            background-color: #409eff;
+            background-color: var(--primary-color);
             color: white;
         }
+
         .btn-primary:hover {
-            background-color: #66b1ff;
+            background-color: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(64, 158, 255, 0.2);
         }
-        .btn-default {
-            background-color: #e6e6e6;
-            color: #333;
-        }
-        .btn-default:hover {
-            background-color: #d9d9d9;
-        }
-        .btn-danger {
-            background-color: #f56c6c;
+
+        .btn-success {
+            background-color: var(--success-color);
             color: white;
         }
+
+        .btn-success:hover {
+            background-color: var(--success-light);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(103, 194, 58, 0.2);
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
         .btn-danger:hover {
-            background-color: #f78989;
+            background-color: var(--danger-light);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(245, 108, 108, 0.2);
         }
+
+        .btn-default {
+            background-color: transparent;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-default:hover {
+            border-color: var(--border-hover);
+            color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        /* 提示文本 */
         .tip {
-            margin-top: 10px;
+            margin-top: 12px;
             font-size: 12px;
-            color: #666;
+            color: var(--text-secondary);
+            line-height: 1.5;
         }
+
         .error {
-            color: #f56c6c;
-            font-weight: bold;
+            color: var(--danger-color);
+            font-weight: 500;
+            animation: shake 0.3s ease;
+        }
+
+        .success {
+            color: var(--success-color);
+            font-weight: 500;
+        }
+
+        /* 拖拽提示 */
+        .drag-over {
+            border: 2px dashed var(--primary-color);
+            background-color: rgba(64, 158, 255, 0.05);
+        }
+
+        /* 复制成功动画 */
+        @keyframes copySuccess {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 0; }
+        }
+
+        .copy-toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            animation: copySuccess 1s ease forwards;
+        }
+
+        /* 错误抖动动画 */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        /* 适配移动端 */
+        @media (max-width: 767px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            textarea {
+                height: 250px;
+            }
+            .btn-group {
+                justify-content: center;
+            }
+            button {
+                flex: 1;
+                justify-content: center;
+            }
         }
     </style>
 </head>
 <body>
-    <h1 class="title">JSON格式化/校验工具</h1>
+    <!-- 顶部标题+主题切换 -->
+    <div class="header">
+        <h1 class="title">✨ JSON格式化工具</h1>
+        <button class="theme-switch" id="themeSwitch">
+            <span id="themeIcon">🌞</span>
+            <span id="themeText">切换暗黑模式</span>
+        </button>
+    </div>
+
+    <!-- 复制成功提示 -->
+    <div class="copy-toast" id="copyToast">✅ 复制成功！</div>
+
+    <!-- 主容器 -->
     <div class="container">
         <!-- 输入区域 -->
         <div class="input-area card">
-            <h3>请输入/粘贴JSON文本</h3>
-            <textarea id="jsonInput" placeholder="示例：{&quot;name&quot;:&quot;ESA Pages&quot;,&quot;type&quot;:&quot;前端工具&quot;}"></textarea>
+            <div class="card-header">
+                <h3 class="card-title">📥 输入/粘贴JSON文本</h3>
+                <span class="char-count" id="inputCharCount">字符数：0</span>
+            </div>
+            <textarea 
+                id="jsonInput" 
+                placeholder="示例：{&quot;name&quot;:&quot;ESA Pages&quot;,&quot;type&quot;:&quot;前端工具&quot;,&quot;version&quot;:1.0,&quot;enabled&quot;:true}"
+                oninput="updateCharCount()"
+            ></textarea>
             <div class="btn-group">
-                <button class="btn-primary" onclick="formatJson()">格式化JSON</button>
-                <button class="btn-default" onclick="clearInput()">清空输入</button>
+                <button class="btn-primary" onclick="formatJson()">📝 格式化JSON</button>
+                <button class="btn-success" onclick="compressJson()">🗜️ 压缩JSON</button>
+                <button class="btn-default" onclick="clearInput()">🧹 清空输入</button>
+                <button class="btn-default" onclick="clearAll()">🗑️ 清空所有</button>
             </div>
             <div id="errorTip" class="tip"></div>
+            <div class="tip">💡 支持拖拽JSON文件到输入框直接解析</div>
         </div>
 
         <!-- 输出区域 -->
         <div class="output-area card">
-            <h3>格式化结果</h3>
-            <textarea id="jsonOutput" readonly placeholder="格式化后的JSON会显示在这里..."></textarea>
+            <div class="card-header">
+                <h3 class="card-title">📤 处理结果</h3>
+                <span class="char-count" id="outputCharCount">字符数：0</span>
+            </div>
+            <div id="jsonOutput" placeholder="格式化/压缩后的JSON会显示在这里..."></div>
             <div class="btn-group">
-                <button class="btn-primary" onclick="copyOutput()">复制结果</button>
-                <button class="btn-default" onclick="clearOutput()">清空结果</button>
+                <button class="btn-primary" onclick="copyOutput()">📋 复制结果</button>
+                <button class="btn-success" onclick="downloadJson()">💾 下载文件</button>
+                <button class="btn-default" onclick="clearOutput()">🧹 清空结果</button>
             </div>
             <div id="copyTip" class="tip"></div>
         </div>
     </div>
 
     <script>
-        // 格式化JSON核心函数
-        function formatJson() {
-            const input = document.getElementById('jsonInput').value.trim();
-            const errorTip = document.getElementById('errorTip');
-            const output = document.getElementById('jsonOutput');
+        // 全局变量
+        let currentTheme = localStorage.getItem('jsonToolTheme') || 'light';
+        const jsonInput = document.getElementById('jsonInput');
+        const jsonOutput = document.getElementById('jsonOutput');
+        const errorTip = document.getElementById('errorTip');
+        const copyTip = document.getElementById('copyTip');
+        const themeSwitch = document.getElementById('themeSwitch');
+        const themeIcon = document.getElementById('themeIcon');
+        const themeText = document.getElementById('themeText');
+        const copyToast = document.getElementById('copyToast');
+        const inputCharCount = document.getElementById('inputCharCount');
+        const outputCharCount = document.getElementById('outputCharCount');
+
+        // 初始化主题
+        document.documentElement.setAttribute('data-theme', currentTheme);
+        updateThemeUI();
+
+        // 主题切换
+        themeSwitch.addEventListener('click', () => {
+            currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', currentTheme);
+            localStorage.setItem('jsonToolTheme', currentTheme);
+            updateThemeUI();
+            // 重新高亮输出内容（主题切换后颜色同步）
+            if (jsonOutput.innerHTML) {
+                const text = jsonOutput.textContent || jsonOutput.innerText;
+                if (text) {
+                    try {
+                        JSON.parse(text);
+                        jsonOutput.innerHTML = syntaxHighlight(text);
+                    } catch (e) {
+                        jsonOutput.textContent = text;
+                    }
+                }
+            }
+        });
+
+        // 更新主题UI
+        function updateThemeUI() {
+            if (currentTheme === 'dark') {
+                themeIcon.textContent = '🌙';
+                themeText.textContent = '切换亮色模式';
+            } else {
+                themeIcon.textContent = '🌞';
+                themeText.textContent = '切换暗黑模式';
+            }
+        }
+
+        // 更新字符计数
+        function updateCharCount() {
+            // 输入区域计数
+            const inputLen = jsonInput.value.trim().length;
+            inputCharCount.textContent = `字符数：${inputLen}`;
             
-            // 清空之前的错误提示
+            // 输出区域计数
+            const outputText = jsonOutput.textContent || jsonOutput.innerText;
+            const outputLen = outputText.trim().length;
+            outputCharCount.textContent = `字符数：${outputLen}`;
+        }
+
+        // JSON语法高亮
+        function syntaxHighlight(json) {
+            if (typeof json !== 'string') {
+                json = JSON.stringify(json, undefined, 2);
+            }
+            json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+                let cls = 'json-number';
+                if (/^"/.test(match)) {
+                    if (/:$/.test(match)) {
+                        cls = 'json-key';
+                    } else {
+                        cls = 'json-string';
+                    }
+                } else if (/true|false/.test(match)) {
+                    cls = 'json-boolean';
+                } else if (/null/.test(match)) {
+                    cls = 'json-null';
+                }
+                return `<span class="${cls}">${match}</span>`;
+            });
+        }
+
+        // 格式化JSON
+        function formatJson() {
+            const input = jsonInput.value.trim();
             errorTip.textContent = '';
             errorTip.classList.remove('error');
 
             if (!input) {
                 errorTip.textContent = '提示：请输入JSON文本！';
-                output.value = '';
+                jsonOutput.innerHTML = '';
+                updateCharCount();
                 return;
             }
 
             try {
-                // 解析JSON并格式化（缩进2个空格）
                 const parsedJson = JSON.parse(input);
                 const formattedJson = JSON.stringify(parsedJson, null, 2);
-                output.value = formattedJson;
+                jsonOutput.innerHTML = syntaxHighlight(formattedJson);
                 errorTip.textContent = '✅ JSON格式正确，已完成格式化！';
+                errorTip.classList.add('success');
             } catch (e) {
-                // 捕获语法错误并提示
-                errorTip.textContent = `❌ JSON格式错误：${e.message}`;
+                // 解析错误位置
+                const errorMsg = e.message;
+                let errorPos = '未知位置';
+                const match = /position (\d+)/.exec(errorMsg);
+                if (match) {
+                    errorPos = `第 ${match[1]} 个字符`;
+                }
+                errorTip.textContent = `❌ JSON格式错误（${errorPos}）：${errorMsg}`;
                 errorTip.classList.add('error');
-                output.value = '';
+                jsonOutput.innerHTML = '';
             }
+            updateCharCount();
         }
 
-        // 清空输入
-        function clearInput() {
-            document.getElementById('jsonInput').value = '';
-            document.getElementById('errorTip').textContent = '';
+        // 压缩JSON
+        function compressJson() {
+            const input = jsonInput.value.trim();
+            errorTip.textContent = '';
+            errorTip.classList.remove('error');
+
+            if (!input) {
+                errorTip.textContent = '提示：请输入JSON文本！';
+                jsonOutput.innerHTML = '';
+                updateCharCount();
+                return;
+            }
+
+            try {
+                const parsedJson = JSON.parse(input);
+                const compressedJson = JSON.stringify(parsedJson);
+                jsonOutput.innerHTML = syntaxHighlight(compressedJson);
+                errorTip.textContent = '✅ JSON格式正确，已完成压缩！';
+                errorTip.classList.add('success');
+            } catch (e) {
+                const errorMsg = e.message;
+                let errorPos = '未知位置';
+                const match = /position (\d+)/.exec(errorMsg);
+                if (match) {
+                    errorPos = `第 ${match[1]} 个字符`;
+                }
+                errorTip.textContent = `❌ JSON格式错误（${errorPos}）：${errorMsg}`;
+                errorTip.classList.add('error');
+                jsonOutput.innerHTML = '';
+            }
+            updateCharCount();
         }
 
-        // 清空输出
-        function clearOutput() {
-            document.getElementById('jsonOutput').value = '';
-            document.getElementById('copyTip').textContent = '';
-        }
-
-        // 复制格式化结果
+        // 复制结果
         function copyOutput() {
-            const output = document.getElementById('jsonOutput');
-            const copyTip = document.getElementById('copyTip');
+            const outputText = jsonOutput.textContent || jsonOutput.innerText;
             
-            if (!output.value) {
+            if (!outputText) {
                 copyTip.textContent = '❌ 暂无内容可复制！';
                 copyTip.classList.add('error');
                 setTimeout(() => copyTip.textContent = '', 2000);
@@ -189,27 +559,120 @@
             }
 
             // 复制到剪贴板
-            navigator.clipboard.writeText(output.value).then(() => {
-                copyTip.textContent = '✅ 复制成功！';
-                setTimeout(() => copyTip.textContent = '', 2000);
+            navigator.clipboard.writeText(outputText).then(() => {
+                // 显示动画提示
+                copyToast.style.animation = 'none';
+                copyToast.offsetHeight; // 触发重绘
+                copyToast.style.animation = 'copySuccess 1s ease forwards';
+                copyTip.textContent = '';
             }).catch(() => {
-                // 兼容低版本浏览器的备用方案
-                output.select();
+                // 兼容低版本浏览器
+                const textArea = document.createElement('textarea');
+                textArea.value = outputText;
+                document.body.appendChild(textArea);
+                textArea.select();
                 document.execCommand('copy');
-                copyTip.textContent = '✅ 复制成功！';
-                setTimeout(() => copyTip.textContent = '', 2000);
+                document.body.removeChild(textArea);
+                copyToast.style.animation = 'none';
+                copyToast.offsetHeight;
+                copyToast.style.animation = 'copySuccess 1s ease forwards';
+                copyTip.textContent = '';
             });
         }
 
-        // 页面加载时给输入框填充示例（可选）
+        // 下载JSON文件
+        function downloadJson() {
+            const outputText = jsonOutput.textContent || jsonOutput.innerText;
+            
+            if (!outputText) {
+                copyTip.textContent = '❌ 暂无内容可下载！';
+                copyTip.classList.add('error');
+                setTimeout(() => copyTip.textContent = '', 2000);
+                return;
+            }
+
+            // 创建Blob对象
+            const blob = new Blob([outputText], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            // 创建下载链接
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `json_tool_${new Date().getTime()}.json`;
+            a.click();
+            
+            // 释放URL
+            URL.revokeObjectURL(url);
+            copyTip.textContent = '✅ 文件下载成功！';
+            copyTip.classList.add('success');
+            setTimeout(() => copyTip.textContent = '', 3000);
+        }
+
+        // 清空输入
+        function clearInput() {
+            jsonInput.value = '';
+            errorTip.textContent = '';
+            errorTip.classList.remove('error', 'success');
+            updateCharCount();
+        }
+
+        // 清空输出
+        function clearOutput() {
+            jsonOutput.innerHTML = '';
+            copyTip.textContent = '';
+            copyTip.classList.remove('error', 'success');
+            updateCharCount();
+        }
+
+        // 清空所有
+        function clearAll() {
+            clearInput();
+            clearOutput();
+        }
+
+        // 拖拽文件解析
+        jsonInput.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            jsonInput.classList.add('drag-over');
+        });
+
+        jsonInput.addEventListener('dragleave', () => {
+            jsonInput.classList.remove('drag-over');
+        });
+
+        jsonInput.addEventListener('drop', (e) => {
+            e.preventDefault();
+            jsonInput.classList.remove('drag-over');
+            
+            const file = e.dataTransfer.files[0];
+            if (file && file.type === 'application/json') {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    jsonInput.value = event.target.result;
+                    updateCharCount();
+                    formatJson(); // 自动格式化
+                };
+                reader.readAsText(file);
+            } else {
+                errorTip.textContent = '❌ 请拖拽JSON格式的文件！';
+                errorTip.classList.add('error');
+                setTimeout(() => errorTip.textContent = '', 3000);
+            }
+        });
+
+        // 页面加载初始化
         window.onload = function() {
             const exampleJson = {
                 "name": "ESA Pages JSON工具",
                 "author": "参赛作品",
-                "features": ["格式化", "校验", "离线可用", "一键复制"],
-                "version": "1.0.0"
+                "features": ["格式化", "压缩", "语法高亮", "主题切换", "拖拽解析", "下载文件"],
+                "version": "2.0.0",
+                "enabled": true,
+                "updateTime": new Date().toLocaleString()
             };
-            document.getElementById('jsonInput').value = JSON.stringify(exampleJson);
+            jsonInput.value = JSON.stringify(exampleJson);
+            updateCharCount();
+            formatJson();
         };
     </script>
 </body>
