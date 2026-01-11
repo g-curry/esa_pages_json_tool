@@ -208,6 +208,15 @@
             color: var(--text-secondary);
         }
 
+        .stat-item {
+            display: inline-block;
+            margin-right: 16px;
+            padding: 4px 8px;
+            background-color: rgba(64, 158, 255, 0.1);
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
         .input-group {
             display: flex;
             flex-direction: column;
@@ -221,7 +230,21 @@
             flex-wrap: wrap;
         }
 
-        textarea, input {
+        .checkbox-group {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin: 8px 0;
+            align-items: center;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        textarea, input, select {
             width: 100%;
             padding: 16px;
             border: 1px solid var(--border-color);
@@ -236,12 +259,16 @@
             font-family: "Consolas", monospace;
         }
 
-        input {
+        input, select {
             height: 48px;
             padding: 0 16px;
         }
 
-        textarea:focus, input:focus {
+        select {
+            cursor: pointer;
+        }
+
+        textarea:focus, input:focus, select:focus {
             border-color: var(--border-hover);
             box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.1);
         }
@@ -263,6 +290,18 @@
         .json-number { color: #81c784; }
         .json-boolean { color: #4fc3f7; }
         .json-null { color: #9575cd; }
+
+        /* 二维码容器 */
+        .qrcode-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            border: 1px dashed var(--border-color);
+            border-radius: 8px;
+            margin: 16px 0;
+            min-height: 200px;
+        }
 
         /* 按钮组 */
         .btn-group {
@@ -417,14 +456,21 @@
                 flex: 1;
                 justify-content: center;
             }
-            .input-row {
+            .input-row, .checkbox-group {
                 flex-direction: column;
+                align-items: flex-start !important;
             }
             .tab {
                 padding: 10px 16px;
             }
+            .stat-item {
+                display: block;
+                margin-bottom: 8px;
+            }
         }
     </style>
+    <!-- 引入QRCode.js生成二维码（CDN方式，纯前端） -->
+    <script src="https://cdn.bootcdn.net/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
     <!-- 顶部标题+主题切换 -->
@@ -446,6 +492,10 @@
         <div class="tab" data-tab="radixTool">🔢 进制转换</div>
         <div class="tab" data-tab="caseTool">🔤 大小写转换</div>
         <div class="tab" data-tab="urlTool">🔗 URL编解码</div>
+        <div class="tab" data-tab="textTool">📜 文本处理</div>
+        <div class="tab" data-tab="passwordTool">🔐 密码生成</div>
+        <div class="tab" data-tab="countTool">📊 字数统计</div>
+        <div class="tab" data-tab="qrcodeTool">📱 二维码生成</div>
     </div>
 
     <!-- JSON工具 -->
@@ -582,12 +632,132 @@
             <div id="urlTip" class="tip"></div>
             <div class="tip">💡 编码会将特殊字符转换为%xx格式，解码则还原，适用于URL参数处理</div>
         </div>
+
+        <!-- 文本处理工具 -->
+        <div class="tool-content" id="textTool">
+            <div class="card-header">
+                <h3 class="card-title">📜 文本去重/去空格</h3>
+                <span class="char-count" id="textInputCharCount">字符数：0</span>
+            </div>
+            <textarea id="textInput" placeholder="输入要处理的文本" oninput="updateTextCharCount()"></textarea>
+            <div class="checkbox-group">
+                <div class="checkbox-item">
+                    <input type="radio" name="deduplicateType" id="lineDedup" checked>
+                    <label for="lineDedup">按行去重</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="radio" name="deduplicateType" id="globalDedup">
+                    <label for="globalDedup">全局去重（字符）</label>
+                </div>
+            </div>
+            <div class="checkbox-group">
+                <div class="checkbox-item">
+                    <input type="checkbox" id="trimSpace" checked>
+                    <label for="trimSpace">去除首尾空格</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="removeAllSpace">
+                    <label for="removeAllSpace">去除所有空格</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="removeLineBreak">
+                    <label for="removeLineBreak">去除换行符</label>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn-primary" onclick="textDeduplicate()">🔄 文本去重</button>
+                <button class="btn-success" onclick="textRemoveSpace()">🧹 去除空格/换行</button>
+                <button class="btn-default" onclick="clearTextAll()">🧹 清空</button>
+            </div>
+            <div class="card-header" style="margin-top: 24px;">
+                <h3 class="card-title">📤 处理结果</h3>
+                <span class="char-count" id="textOutputCharCount">字符数：0</span>
+            </div>
+            <textarea id="textOutput" readonly placeholder="处理后的文本会显示在这里..."></textarea>
+            <div class="btn-group">
+                <button class="btn-primary" onclick="copyTextOutput()">📋 复制结果</button>
+            </div>
+            <div id="textTip" class="tip"></div>
+        </div>
+
+        <!-- 密码生成工具 -->
+        <div class="tool-content" id="passwordTool">
+            <div class="card-header">
+                <h3 class="card-title">🔐 随机密码生成</h3>
+            </div>
+            <div class="input-group">
+                <div class="input-row">
+                    <input type="number" id="passwordLength" placeholder="密码长度（默认16）" value="16" min="6" max="32">
+                </div>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="includeUpper" checked>
+                        <label for="includeUpper">包含大写字母（A-Z）</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="includeLower" checked>
+                        <label for="includeLower">包含小写字母（a-z）</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="includeNumber" checked>
+                        <label for="includeNumber">包含数字（0-9）</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="includeSymbol">
+                        <label for="includeSymbol">包含特殊字符（!@#$%^&*）</label>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn-primary" onclick="generatePassword()">🔄 生成密码</button>
+                    <button class="btn-default" onclick="copyPassword()">📋 复制密码</button>
+                    <button class="btn-default" onclick="clearPasswordAll()">🧹 清空</button>
+                </div>
+            </div>
+            <input type="text" id="passwordOutput" readonly placeholder="生成的密码会显示在这里...">
+            <div id="passwordTip" class="tip"></div>
+            <div class="tip">💡 建议密码长度≥8位，包含多种字符类型提升安全性</div>
+        </div>
+
+        <!-- 字数统计工具 -->
+        <div class="tool-content" id="countTool">
+            <div class="card-header">
+                <h3 class="card-title">📊 详细字数统计</h3>
+            </div>
+            <textarea id="countInput" placeholder="输入要统计的文本" oninput="countText()"></textarea>
+            <div style="margin: 16px 0;">
+                <span class="stat-item">总字符数（含空格/换行）：<span id="totalChars">0</span></span>
+                <span class="stat-item">纯字符数（不含空格/换行）：<span id="pureChars">0</span></span>
+                <span class="stat-item">单词数：<span id="wordCount">0</span></span>
+                <span class="stat-item">行数：<span id="lineCount">0</span></span>
+                <span class="stat-item">中文数：<span id="cnCount">0</span></span>
+            </div>
+            <div class="btn-group">
+                <button class="btn-default" onclick="clearCountAll()">🧹 清空</button>
+            </div>
+            <div class="tip">💡 单词数按空格/标点分隔统计，中文按单个字符统计</div>
+        </div>
+
+        <!-- 二维码生成工具 -->
+        <div class="tool-content" id="qrcodeTool">
+            <div class="card-header">
+                <h3 class="card-title">📱 二维码生成</h3>
+            </div>
+            <textarea id="qrcodeInput" placeholder="输入文本/URL（如：https://www.aliyun.com）" oninput="generateQRCode()"></textarea>
+            <div class="btn-group">
+                <button class="btn-primary" onclick="generateQRCode()">🔄 生成二维码</button>
+                <button class="btn-default" onclick="clearQRCodeAll()">🧹 清空</button>
+            </div>
+            <div class="qrcode-container" id="qrcodeContainer"></div>
+            <div id="qrcodeTip" class="tip"></div>
+            <div class="tip">💡 支持文本、URL、手机号等内容生成二维码，可直接扫码识别</div>
+        </div>
     </div>
 
     <script>
         // 全局变量
         let currentTheme = localStorage.getItem('toolTheme') || 'light';
         const copyToast = document.getElementById('copyToast');
+        let qrcodeInstance = null;
         
         // 初始化主题
         document.documentElement.setAttribute('data-theme', currentTheme);
@@ -610,6 +780,10 @@
                         document.getElementById('jsonOutput').textContent = text;
                     }
                 }
+            }
+            // 重新生成二维码（主题切换后样式适配）
+            if (qrcodeInstance && document.getElementById('qrcodeInput').value) {
+                generateQRCode();
             }
         });
 
@@ -1137,6 +1311,243 @@
             copyToClipboard(outputText, document.getElementById('urlTip'));
         }
 
+        // ===================== 文本处理工具 =====================
+        function updateTextCharCount() {
+            const inputLen = document.getElementById('textInput').value.trim().length;
+            document.getElementById('textInputCharCount').textContent = `字符数：${inputLen}`;
+            
+            const outputLen = document.getElementById('textOutput').value.trim().length;
+            document.getElementById('textOutputCharCount').textContent = `字符数：${outputLen}`;
+        }
+
+        function textDeduplicate() {
+            const input = document.getElementById('textInput').value;
+            const output = document.getElementById('textOutput');
+            const tip = document.getElementById('textTip');
+            const isLineDedup = document.getElementById('lineDedup').checked;
+            
+            if (!input) {
+                output.value = '';
+                tip.textContent = '❌ 请输入要处理的文本！';
+                tip.classList.add('error');
+                tip.classList.remove('success');
+                updateTextCharCount();
+                return;
+            }
+
+            let result = '';
+            try {
+                if (isLineDedup) {
+                    // 按行去重
+                    const lines = input.split('\n').map(line => line.trim()).filter(line => line);
+                    const uniqueLines = [...new Set(lines)];
+                    result = uniqueLines.join('\n');
+                } else {
+                    // 全局字符去重
+                    const chars = input.split('');
+                    const uniqueChars = [...new Set(chars)];
+                    result = uniqueChars.join('');
+                }
+                
+                output.value = result;
+                tip.textContent = `✅ 文本去重成功！${isLineDedup ? '按行去重' : '全局去重'}`;
+                tip.classList.add('success');
+                tip.classList.remove('error');
+            } catch (e) {
+                output.value = '';
+                tip.textContent = `❌ 处理失败：${e.message}`;
+                tip.classList.add('error');
+                tip.classList.remove('success');
+            }
+            updateTextCharCount();
+        }
+
+        function textRemoveSpace() {
+            const input = document.getElementById('textInput').value;
+            const output = document.getElementById('textOutput');
+            const tip = document.getElementById('textTip');
+            const trimSpace = document.getElementById('trimSpace').checked;
+            const removeAllSpace = document.getElementById('removeAllSpace').checked;
+            const removeLineBreak = document.getElementById('removeLineBreak').checked;
+            
+            if (!input) {
+                output.value = '';
+                tip.textContent = '❌ 请输入要处理的文本！';
+                tip.classList.add('error');
+                tip.classList.remove('success');
+                updateTextCharCount();
+                return;
+            }
+
+            let result = input;
+            try {
+                if (trimSpace) result = result.trim();
+                if (removeAllSpace) result = result.replace(/\s+/g, '');
+                if (removeLineBreak) result = result.replace(/\n+/g, '');
+                
+                output.value = result;
+                tip.textContent = '✅ 去除空格/换行成功！';
+                tip.classList.add('success');
+                tip.classList.remove('error');
+            } catch (e) {
+                output.value = '';
+                tip.textContent = `❌ 处理失败：${e.message}`;
+                tip.classList.add('error');
+                tip.classList.remove('success');
+            }
+            updateTextCharCount();
+        }
+
+        function clearTextAll() {
+            document.getElementById('textInput').value = '';
+            document.getElementById('textOutput').value = '';
+            document.getElementById('textTip').textContent = '';
+            document.getElementById('textTip').classList.remove('success', 'error');
+            updateTextCharCount();
+        }
+
+        function copyTextOutput() {
+            const outputText = document.getElementById('textOutput').value;
+            copyToClipboard(outputText, document.getElementById('textTip'));
+        }
+
+        // ===================== 密码生成工具 =====================
+        function generatePassword() {
+            const length = Number(document.getElementById('passwordLength').value) || 16;
+            const includeUpper = document.getElementById('includeUpper').checked;
+            const includeLower = document.getElementById('includeLower').checked;
+            const includeNumber = document.getElementById('includeNumber').checked;
+            const includeSymbol = document.getElementById('includeSymbol').checked;
+            const output = document.getElementById('passwordOutput');
+            const tip = document.getElementById('passwordTip');
+            
+            // 校验至少选择一种字符类型
+            if (!includeUpper && !includeLower && !includeNumber && !includeSymbol) {
+                tip.textContent = '❌ 至少选择一种字符类型！';
+                tip.classList.add('error');
+                tip.classList.remove('success');
+                output.value = '';
+                return;
+            }
+
+            // 定义字符池
+            const upperChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            const lowerChars = 'abcdefghijklmnopqrstuvwxyz';
+            const numberChars = '0123456789';
+            const symbolChars = '!@#$%^&*';
+            
+            let charPool = '';
+            if (includeUpper) charPool += upperChars;
+            if (includeLower) charPool += lowerChars;
+            if (includeNumber) charPool += numberChars;
+            if (includeSymbol) charPool += symbolChars;
+            
+            // 生成随机密码
+            let password = '';
+            for (let i = 0; i < length; i++) {
+                const randomIndex = Math.floor(Math.random() * charPool.length);
+                password += charPool[randomIndex];
+            }
+            
+            output.value = password;
+            tip.textContent = '✅ 密码生成成功！';
+            tip.classList.add('success');
+            tip.classList.remove('error');
+        }
+
+        function copyPassword() {
+            const password = document.getElementById('passwordOutput').value;
+            copyToClipboard(password, document.getElementById('passwordTip'));
+        }
+
+        function clearPasswordAll() {
+            document.getElementById('passwordLength').value = '16';
+            document.getElementById('includeUpper').checked = true;
+            document.getElementById('includeLower').checked = true;
+            document.getElementById('includeNumber').checked = true;
+            document.getElementById('includeSymbol').checked = false;
+            document.getElementById('passwordOutput').value = '';
+            document.getElementById('passwordTip').textContent = '';
+            document.getElementById('passwordTip').classList.remove('success', 'error');
+        }
+
+        // ===================== 字数统计工具 =====================
+        function countText() {
+            const input = document.getElementById('countInput').value;
+            
+            // 总字符数（含空格/换行）
+            const totalChars = input.length;
+            // 纯字符数（不含空格/换行）
+            const pureChars = input.replace(/\s+/g, '').length;
+            // 行数
+            const lineCount = input.split('\n').length;
+            // 中文数
+            const cnCount = (input.match(/[\u4e00-\u9fa5]/g) || []).length;
+            // 单词数（按空格/标点分隔）
+            const wordCount = input.trim() ? input.trim().split(/\W+/).filter(word => word).length : 0;
+            
+            // 更新统计结果
+            document.getElementById('totalChars').textContent = totalChars;
+            document.getElementById('pureChars').textContent = pureChars;
+            document.getElementById('wordCount').textContent = wordCount;
+            document.getElementById('lineCount').textContent = lineCount;
+            document.getElementById('cnCount').textContent = cnCount;
+        }
+
+        function clearCountAll() {
+            document.getElementById('countInput').value = '';
+            document.getElementById('totalChars').textContent = '0';
+            document.getElementById('pureChars').textContent = '0';
+            document.getElementById('wordCount').textContent = '0';
+            document.getElementById('lineCount').textContent = '0';
+            document.getElementById('cnCount').textContent = '0';
+        }
+
+        // ===================== 二维码生成工具 =====================
+        function generateQRCode() {
+            const input = document.getElementById('qrcodeInput').value.trim();
+            const container = document.getElementById('qrcodeContainer');
+            const tip = document.getElementById('qrcodeTip');
+            
+            // 清空原有二维码
+            container.innerHTML = '';
+            qrcodeInstance = null;
+            
+            if (!input) {
+                tip.textContent = '❌ 请输入要生成二维码的文本/URL！';
+                tip.classList.add('error');
+                tip.classList.remove('success');
+                return;
+            }
+
+            try {
+                // 创建二维码实例
+                qrcodeInstance = new QRCode(container, {
+                    text: input,
+                    width: 200,
+                    colorDark: currentTheme === 'dark' ? '#e0e0e0' : '#333333',
+                    colorLight: currentTheme === 'dark' ? '#252540' : '#ffffff',
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+                
+                tip.textContent = '✅ 二维码生成成功！可直接扫码识别';
+                tip.classList.add('success');
+                tip.classList.remove('error');
+            } catch (e) {
+                tip.textContent = `❌ 生成失败：${e.message}`;
+                tip.classList.add('error');
+                tip.classList.remove('success');
+            }
+        }
+
+        function clearQRCodeAll() {
+            document.getElementById('qrcodeInput').value = '';
+            document.getElementById('qrcodeContainer').innerHTML = '';
+            document.getElementById('qrcodeTip').textContent = '';
+            document.getElementById('qrcodeTip').classList.remove('success', 'error');
+            qrcodeInstance = null;
+        }
+
         // ===================== 通用工具函数 =====================
         function copyToClipboard(text, tipEl) {
             if (!text) {
@@ -1174,8 +1585,8 @@
             const exampleJson = {
                 "name": "ESA Pages 全能工具箱",
                 "author": "参赛作品",
-                "tools": ["JSON工具", "时间戳转换", "进制转换", "大小写转换", "URL编解码"],
-                "version": "3.0.0",
+                "tools": ["JSON工具", "时间戳转换", "进制转换", "大小写转换", "URL编解码", "文本处理", "密码生成", "字数统计", "二维码生成"],
+                "version": "4.0.0",
                 "enabled": true,
                 "updateTime": new Date().toLocaleString()
             };
@@ -1186,6 +1597,10 @@
             // 初始化字符计数
             updateCaseCharCount();
             updateUrlCharCount();
+            updateTextCharCount();
+            
+            // 初始化密码生成
+            generatePassword();
         };
     </script>
 </body>
