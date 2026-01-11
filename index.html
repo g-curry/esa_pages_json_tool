@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>✨ JSON格式化工具 | ESA Pages参赛作品</title>
+    <title>✨ 全能前端工具箱 | ESA Pages参赛作品</title>
     <style>
-        /* 全局CSS变量 - 支持主题切换 */
+        /* 全局CSS变量 - 主题系统 */
         :root {
             --primary-color: #409eff;
             --primary-light: #66b1ff;
@@ -14,8 +14,12 @@
             --danger-light: #f78989;
             --success-color: #67c23a;
             --success-light: #85ce61;
+            --warning-color: #e6a23c;
+            --warning-light: #ebb563;
             --bg-color: #f5f7fa;
             --card-bg: #ffffff;
+            --tab-active: #409eff;
+            --tab-hover: #e8f4ff;
             --text-main: #333333;
             --text-secondary: #666666;
             --text-placeholder: #999999;
@@ -34,8 +38,12 @@
             --danger-light: #f49898;
             --success-color: #70c050;
             --success-light: #88d070;
+            --warning-color: #e9b04b;
+            --warning-light: #f0c078;
             --bg-color: #1a1a2e;
             --card-bg: #252540;
+            --tab-active: #54a0ff;
+            --tab-hover: #2f2f55;
             --text-main: #e0e0e0;
             --text-secondary: #a0a0c0;
             --text-placeholder: #707090;
@@ -113,36 +121,72 @@
             box-shadow: var(--shadow-hover);
         }
 
-        /* 主容器 */
-        .container {
+        /* 标签页样式 */
+        .tabs {
             display: flex;
-            flex-direction: column;
-            gap: 24px;
+            gap: 2px;
+            background-color: var(--card-bg);
+            border-radius: 8px 8px 0 0;
+            padding: 4px;
+            box-shadow: var(--shadow);
+            overflow-x: auto;
+            scrollbar-width: none;
         }
 
-        @media (min-width: 768px) {
-            .container {
-                flex-direction: row;
-            }
-            .input-area, .output-area {
-                flex: 1;
-            }
+        .tabs::-webkit-scrollbar {
+            display: none;
         }
 
-        /* 卡片样式 */
-        .card {
+        .tab {
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+            white-space: nowrap;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .tab.active {
+            background-color: var(--tab-active);
+            color: white;
+        }
+
+        .tab:not(.active):hover {
+            background-color: var(--tab-hover);
+            color: var(--primary-color);
+        }
+
+        /* 工具容器 */
+        .tool-container {
             background: var(--card-bg);
             padding: 24px;
-            border-radius: 12px;
+            border-radius: 0 0 12px 12px;
             box-shadow: var(--shadow);
             transition: var(--transition);
+            margin-bottom: 24px;
         }
 
-        .card:hover {
+        .tool-container:hover {
             box-shadow: var(--shadow-hover);
-            transform: translateY(-2px);
         }
 
+        .tool-content {
+            display: none;
+        }
+
+        .tool-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 通用卡片/表单样式 */
         .card-header {
             display: flex;
             justify-content: space-between;
@@ -164,10 +208,21 @@
             color: var(--text-secondary);
         }
 
-        /* 文本框样式 */
-        textarea {
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        textarea, input {
             width: 100%;
-            height: 350px;
             padding: 16px;
             border: 1px solid var(--border-color);
             border-radius: 8px;
@@ -181,23 +236,28 @@
             font-family: "Consolas", monospace;
         }
 
-        textarea:focus {
+        input {
+            height: 48px;
+            padding: 0 16px;
+        }
+
+        textarea:focus, input:focus {
             border-color: var(--border-hover);
             box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.1);
         }
 
-        textarea::placeholder {
+        textarea::placeholder, input::placeholder {
             color: var(--text-placeholder);
         }
 
-        /* 语法高亮容器 */
+        /* JSON语法高亮 */
         #jsonOutput {
             white-space: pre-wrap;
             word-wrap: break-word;
             overflow-y: auto;
+            height: 350px;
         }
 
-        /* JSON语法高亮样式 */
         .json-key { color: #e57373; }
         .json-string { color: #66bb6a; }
         .json-number { color: #81c784; }
@@ -258,6 +318,17 @@
             box-shadow: 0 4px 12px rgba(245, 108, 108, 0.2);
         }
 
+        .btn-warning {
+            background-color: var(--warning-color);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background-color: var(--warning-light);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(230, 162, 60, 0.2);
+        }
+
         .btn-default {
             background-color: transparent;
             color: var(--text-main);
@@ -286,6 +357,11 @@
 
         .success {
             color: var(--success-color);
+            font-weight: 500;
+        }
+
+        .warning {
+            color: var(--warning-color);
             font-weight: 500;
         }
 
@@ -332,7 +408,7 @@
                 align-items: flex-start;
             }
             textarea {
-                height: 250px;
+                height: 200px !important;
             }
             .btn-group {
                 justify-content: center;
@@ -341,13 +417,19 @@
                 flex: 1;
                 justify-content: center;
             }
+            .input-row {
+                flex-direction: column;
+            }
+            .tab {
+                padding: 10px 16px;
+            }
         }
     </style>
 </head>
 <body>
     <!-- 顶部标题+主题切换 -->
     <div class="header">
-        <h1 class="title">✨ JSON格式化工具</h1>
+        <h1 class="title">✨ 全能前端工具箱</h1>
         <button class="theme-switch" id="themeSwitch">
             <span id="themeIcon">🌞</span>
             <span id="themeText">切换暗黑模式</span>
@@ -357,78 +439,175 @@
     <!-- 复制成功提示 -->
     <div class="copy-toast" id="copyToast">✅ 复制成功！</div>
 
-    <!-- 主容器 -->
-    <div class="container">
-        <!-- 输入区域 -->
-        <div class="input-area card">
+    <!-- 工具标签页 -->
+    <div class="tabs" id="toolTabs">
+        <div class="tab active" data-tab="jsonTool">📝 JSON工具</div>
+        <div class="tab" data-tab="timestampTool">⏰ 时间戳转换</div>
+        <div class="tab" data-tab="radixTool">🔢 进制转换</div>
+        <div class="tab" data-tab="caseTool">🔤 大小写转换</div>
+        <div class="tab" data-tab="urlTool">🔗 URL编解码</div>
+    </div>
+
+    <!-- JSON工具 -->
+    <div class="tool-container">
+        <div class="tool-content active" id="jsonTool">
             <div class="card-header">
                 <h3 class="card-title">📥 输入/粘贴JSON文本</h3>
-                <span class="char-count" id="inputCharCount">字符数：0</span>
+                <span class="char-count" id="jsonInputCharCount">字符数：0</span>
             </div>
             <textarea 
                 id="jsonInput" 
                 placeholder="示例：{&quot;name&quot;:&quot;ESA Pages&quot;,&quot;type&quot;:&quot;前端工具&quot;,&quot;version&quot;:1.0,&quot;enabled&quot;:true}"
-                oninput="updateCharCount()"
+                oninput="updateJsonCharCount()"
             ></textarea>
             <div class="btn-group">
                 <button class="btn-primary" onclick="formatJson()">📝 格式化JSON</button>
                 <button class="btn-success" onclick="compressJson()">🗜️ 压缩JSON</button>
-                <button class="btn-default" onclick="clearInput()">🧹 清空输入</button>
-                <button class="btn-default" onclick="clearAll()">🗑️ 清空所有</button>
+                <button class="btn-default" onclick="clearJsonInput()">🧹 清空输入</button>
+                <button class="btn-default" onclick="clearJsonAll()">🗑️ 清空所有</button>
             </div>
-            <div id="errorTip" class="tip"></div>
+            <div id="jsonErrorTip" class="tip"></div>
             <div class="tip">💡 支持拖拽JSON文件到输入框直接解析</div>
-        </div>
 
-        <!-- 输出区域 -->
-        <div class="output-area card">
-            <div class="card-header">
+            <div class="card-header" style="margin-top: 24px;">
                 <h3 class="card-title">📤 处理结果</h3>
-                <span class="char-count" id="outputCharCount">字符数：0</span>
+                <span class="char-count" id="jsonOutputCharCount">字符数：0</span>
             </div>
             <div id="jsonOutput" placeholder="格式化/压缩后的JSON会显示在这里..."></div>
             <div class="btn-group">
-                <button class="btn-primary" onclick="copyOutput()">📋 复制结果</button>
+                <button class="btn-primary" onclick="copyJsonOutput()">📋 复制结果</button>
                 <button class="btn-success" onclick="downloadJson()">💾 下载文件</button>
-                <button class="btn-default" onclick="clearOutput()">🧹 清空结果</button>
+                <button class="btn-default" onclick="clearJsonOutput()">🧹 清空结果</button>
             </div>
-            <div id="copyTip" class="tip"></div>
+            <div id="jsonCopyTip" class="tip"></div>
+        </div>
+
+        <!-- 时间戳转换工具 -->
+        <div class="tool-content" id="timestampTool">
+            <div class="card-header">
+                <h3 class="card-title">⏰ 时间戳 ↔ 常规时间</h3>
+            </div>
+            <div class="input-group">
+                <div class="input-row">
+                    <input type="text" id="timestampInput" placeholder="输入时间戳（支持秒/毫秒），如：1736100000 或 1736100000000" oninput="convertTimestampToTime()">
+                    <input type="text" id="timeInput" placeholder="输入时间（如：2026-01-01 12:00:00）" oninput="convertTimeToTimestamp()">
+                </div>
+                <div class="btn-group">
+                    <button class="btn-primary" onclick="convertTimestampToTime()">🔄 时间戳转时间</button>
+                    <button class="btn-success" onclick="convertTimeToTimestamp()">🔄 时间转时间戳</button>
+                    <button class="btn-default" onclick="fillCurrentTime()">🕒 填充当前时间</button>
+                    <button class="btn-default" onclick="clearTimestampAll()">🧹 清空</button>
+                </div>
+            </div>
+            <div id="timestampResult" class="tip success"></div>
+            <div class="tip">💡 支持10位（秒）/13位（毫秒）时间戳，时间格式支持：YYYY-MM-DD HH:mm:ss</div>
+        </div>
+
+        <!-- 进制转换工具 -->
+        <div class="tool-content" id="radixTool">
+            <div class="card-header">
+                <h3 class="card-title">🔢 进制转换（2/8/10/16进制）</h3>
+            </div>
+            <div class="input-group">
+                <input type="text" id="radixInput" placeholder="输入要转换的数字" oninput="convertRadix()">
+                <div class="input-row">
+                    <select id="fromRadix" onchange="convertRadix()">
+                        <option value="10">源进制：十进制</option>
+                        <option value="2">源进制：二进制</option>
+                        <option value="8">源进制：八进制</option>
+                        <option value="16">源进制：十六进制</option>
+                    </select>
+                    <select id="toRadix" onchange="convertRadix()">
+                        <option value="2">目标进制：二进制</option>
+                        <option value="8">目标进制：八进制</option>
+                        <option value="10">目标进制：十进制</option>
+                        <option value="16">目标进制：十六进制</option>
+                    </select>
+                </div>
+                <div class="btn-group">
+                    <button class="btn-primary" onclick="convertRadix()">🔄 执行转换</button>
+                    <button class="btn-default" onclick="clearRadixAll()">🧹 清空</button>
+                    <button class="btn-default" onclick="copyRadixResult()">📋 复制结果</button>
+                </div>
+            </div>
+            <div id="radixResult" class="tip success"></div>
+            <div class="tip">💡 十六进制支持大小写字母，二进制仅支持0/1，八进制仅支持0-7</div>
+        </div>
+
+        <!-- 大小写转换工具 -->
+        <div class="tool-content" id="caseTool">
+            <div class="card-header">
+                <h3 class="card-title">🔤 文本大小写转换</h3>
+                <span class="char-count" id="caseInputCharCount">字符数：0</span>
+            </div>
+            <textarea id="caseInput" placeholder="输入要转换的文本" oninput="updateCaseCharCount()"></textarea>
+            <div class="btn-group">
+                <button class="btn-primary" onclick="toUpperCase()">🔠 全部大写</button>
+                <button class="btn-success" onclick="toLowerCase()">🔡 全部小写</button>
+                <button class="btn-warning" onclick="toFirstUpperCase()">🔤 首字母大写</button>
+                <button class="btn-default" onclick="toReverseCase()">🔄 反转大小写</button>
+                <button class="btn-default" onclick="clearCaseAll()">🧹 清空</button>
+            </div>
+            <div class="card-header" style="margin-top: 24px;">
+                <h3 class="card-title">📤 转换结果</h3>
+                <span class="char-count" id="caseOutputCharCount">字符数：0</span>
+            </div>
+            <textarea id="caseOutput" readonly placeholder="转换后的文本会显示在这里..."></textarea>
+            <div class="btn-group">
+                <button class="btn-primary" onclick="copyCaseOutput()">📋 复制结果</button>
+            </div>
+            <div id="caseTip" class="tip"></div>
+        </div>
+
+        <!-- URL编解码工具 -->
+        <div class="tool-content" id="urlTool">
+            <div class="card-header">
+                <h3 class="card-title">🔗 URL编解码</h3>
+                <span class="char-count" id="urlInputCharCount">字符数：0</span>
+            </div>
+            <textarea id="urlInput" placeholder="输入要编码/解码的URL或文本" oninput="updateUrlCharCount()"></textarea>
+            <div class="btn-group">
+                <button class="btn-primary" onclick="urlEncode()">🔒 URL编码</button>
+                <button class="btn-success" onclick="urlDecode()">🔓 URL解码</button>
+                <button class="btn-default" onclick="clearUrlAll()">🧹 清空</button>
+            </div>
+            <div class="card-header" style="margin-top: 24px;">
+                <h3 class="card-title">📤 处理结果</h3>
+                <span class="char-count" id="urlOutputCharCount">字符数：0</span>
+            </div>
+            <textarea id="urlOutput" readonly placeholder="编码/解码后的内容会显示在这里..."></textarea>
+            <div class="btn-group">
+                <button class="btn-primary" onclick="copyUrlOutput()">📋 复制结果</button>
+            </div>
+            <div id="urlTip" class="tip"></div>
+            <div class="tip">💡 编码会将特殊字符转换为%xx格式，解码则还原，适用于URL参数处理</div>
         </div>
     </div>
 
     <script>
         // 全局变量
-        let currentTheme = localStorage.getItem('jsonToolTheme') || 'light';
-        const jsonInput = document.getElementById('jsonInput');
-        const jsonOutput = document.getElementById('jsonOutput');
-        const errorTip = document.getElementById('errorTip');
-        const copyTip = document.getElementById('copyTip');
-        const themeSwitch = document.getElementById('themeSwitch');
-        const themeIcon = document.getElementById('themeIcon');
-        const themeText = document.getElementById('themeText');
+        let currentTheme = localStorage.getItem('toolTheme') || 'light';
         const copyToast = document.getElementById('copyToast');
-        const inputCharCount = document.getElementById('inputCharCount');
-        const outputCharCount = document.getElementById('outputCharCount');
-
+        
         // 初始化主题
         document.documentElement.setAttribute('data-theme', currentTheme);
         updateThemeUI();
 
         // 主题切换
-        themeSwitch.addEventListener('click', () => {
+        document.getElementById('themeSwitch').addEventListener('click', () => {
             currentTheme = currentTheme === 'light' ? 'dark' : 'light';
             document.documentElement.setAttribute('data-theme', currentTheme);
-            localStorage.setItem('jsonToolTheme', currentTheme);
+            localStorage.setItem('toolTheme', currentTheme);
             updateThemeUI();
-            // 重新高亮输出内容（主题切换后颜色同步）
-            if (jsonOutput.innerHTML) {
-                const text = jsonOutput.textContent || jsonOutput.innerText;
+            // 重新高亮JSON内容
+            if (document.getElementById('jsonOutput').innerHTML) {
+                const text = document.getElementById('jsonOutput').textContent || document.getElementById('jsonOutput').innerText;
                 if (text) {
                     try {
                         JSON.parse(text);
-                        jsonOutput.innerHTML = syntaxHighlight(text);
+                        document.getElementById('jsonOutput').innerHTML = syntaxHighlight(text);
                     } catch (e) {
-                        jsonOutput.textContent = text;
+                        document.getElementById('jsonOutput').textContent = text;
                     }
                 }
             }
@@ -436,6 +615,8 @@
 
         // 更新主题UI
         function updateThemeUI() {
+            const themeIcon = document.getElementById('themeIcon');
+            const themeText = document.getElementById('themeText');
             if (currentTheme === 'dark') {
                 themeIcon.textContent = '🌙';
                 themeText.textContent = '切换亮色模式';
@@ -445,19 +626,20 @@
             }
         }
 
-        // 更新字符计数
-        function updateCharCount() {
-            // 输入区域计数
-            const inputLen = jsonInput.value.trim().length;
-            inputCharCount.textContent = `字符数：${inputLen}`;
-            
-            // 输出区域计数
-            const outputText = jsonOutput.textContent || jsonOutput.innerText;
-            const outputLen = outputText.trim().length;
-            outputCharCount.textContent = `字符数：${outputLen}`;
-        }
+        // 标签页切换
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // 移除所有激活状态
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tool-content').forEach(c => c.classList.remove('active'));
+                // 激活当前标签
+                tab.classList.add('active');
+                const tabId = tab.getAttribute('data-tab');
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
 
-        // JSON语法高亮
+        // ===================== JSON工具功能 =====================
         function syntaxHighlight(json) {
             if (typeof json !== 'string') {
                 json = JSON.stringify(json, undefined, 2);
@@ -480,27 +662,37 @@
             });
         }
 
-        // 格式化JSON
+        function updateJsonCharCount() {
+            const inputLen = document.getElementById('jsonInput').value.trim().length;
+            document.getElementById('jsonInputCharCount').textContent = `字符数：${inputLen}`;
+            
+            const outputText = document.getElementById('jsonOutput').textContent || document.getElementById('jsonOutput').innerText;
+            const outputLen = outputText.trim().length;
+            document.getElementById('jsonOutputCharCount').textContent = `字符数：${outputLen}`;
+        }
+
         function formatJson() {
-            const input = jsonInput.value.trim();
+            const input = document.getElementById('jsonInput').value.trim();
+            const errorTip = document.getElementById('jsonErrorTip');
+            const output = document.getElementById('jsonOutput');
+            
             errorTip.textContent = '';
             errorTip.classList.remove('error');
 
             if (!input) {
                 errorTip.textContent = '提示：请输入JSON文本！';
-                jsonOutput.innerHTML = '';
-                updateCharCount();
+                output.innerHTML = '';
+                updateJsonCharCount();
                 return;
             }
 
             try {
                 const parsedJson = JSON.parse(input);
                 const formattedJson = JSON.stringify(parsedJson, null, 2);
-                jsonOutput.innerHTML = syntaxHighlight(formattedJson);
+                output.innerHTML = syntaxHighlight(formattedJson);
                 errorTip.textContent = '✅ JSON格式正确，已完成格式化！';
                 errorTip.classList.add('success');
             } catch (e) {
-                // 解析错误位置
                 const errorMsg = e.message;
                 let errorPos = '未知位置';
                 const match = /position (\d+)/.exec(errorMsg);
@@ -509,28 +701,30 @@
                 }
                 errorTip.textContent = `❌ JSON格式错误（${errorPos}）：${errorMsg}`;
                 errorTip.classList.add('error');
-                jsonOutput.innerHTML = '';
+                output.innerHTML = '';
             }
-            updateCharCount();
+            updateJsonCharCount();
         }
 
-        // 压缩JSON
         function compressJson() {
-            const input = jsonInput.value.trim();
+            const input = document.getElementById('jsonInput').value.trim();
+            const errorTip = document.getElementById('jsonErrorTip');
+            const output = document.getElementById('jsonOutput');
+            
             errorTip.textContent = '';
             errorTip.classList.remove('error');
 
             if (!input) {
                 errorTip.textContent = '提示：请输入JSON文本！';
-                jsonOutput.innerHTML = '';
-                updateCharCount();
+                output.innerHTML = '';
+                updateJsonCharCount();
                 return;
             }
 
             try {
                 const parsedJson = JSON.parse(input);
                 const compressedJson = JSON.stringify(parsedJson);
-                jsonOutput.innerHTML = syntaxHighlight(compressedJson);
+                output.innerHTML = syntaxHighlight(compressedJson);
                 errorTip.textContent = '✅ JSON格式正确，已完成压缩！';
                 errorTip.classList.add('success');
             } catch (e) {
@@ -542,33 +736,427 @@
                 }
                 errorTip.textContent = `❌ JSON格式错误（${errorPos}）：${errorMsg}`;
                 errorTip.classList.add('error');
-                jsonOutput.innerHTML = '';
+                output.innerHTML = '';
             }
-            updateCharCount();
+            updateJsonCharCount();
         }
 
-        // 复制结果
-        function copyOutput() {
-            const outputText = jsonOutput.textContent || jsonOutput.innerText;
+        function copyJsonOutput() {
+            const outputText = document.getElementById('jsonOutput').textContent || document.getElementById('jsonOutput').innerText;
+            copyToClipboard(outputText, document.getElementById('jsonCopyTip'));
+        }
+
+        function downloadJson() {
+            const outputText = document.getElementById('jsonOutput').textContent || document.getElementById('jsonOutput').innerText;
             
             if (!outputText) {
-                copyTip.textContent = '❌ 暂无内容可复制！';
-                copyTip.classList.add('error');
-                setTimeout(() => copyTip.textContent = '', 2000);
+                const tip = document.getElementById('jsonCopyTip');
+                tip.textContent = '❌ 暂无内容可下载！';
+                tip.classList.add('error');
+                setTimeout(() => tip.textContent = '', 2000);
                 return;
             }
 
-            // 复制到剪贴板
-            navigator.clipboard.writeText(outputText).then(() => {
+            const blob = new Blob([outputText], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `json_tool_${new Date().getTime()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            const tip = document.getElementById('jsonCopyTip');
+            tip.textContent = '✅ 文件下载成功！';
+            tip.classList.add('success');
+            setTimeout(() => tip.textContent = '', 3000);
+        }
+
+        function clearJsonInput() {
+            document.getElementById('jsonInput').value = '';
+            document.getElementById('jsonErrorTip').textContent = '';
+            document.getElementById('jsonErrorTip').classList.remove('error', 'success');
+            updateJsonCharCount();
+        }
+
+        function clearJsonOutput() {
+            document.getElementById('jsonOutput').innerHTML = '';
+            document.getElementById('jsonCopyTip').textContent = '';
+            document.getElementById('jsonCopyTip').classList.remove('error', 'success');
+            updateJsonCharCount();
+        }
+
+        function clearJsonAll() {
+            clearJsonInput();
+            clearJsonOutput();
+        }
+
+        // JSON拖拽解析
+        document.getElementById('jsonInput').addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.target.classList.add('drag-over');
+        });
+
+        document.getElementById('jsonInput').addEventListener('dragleave', (e) => {
+            e.target.classList.remove('drag-over');
+        });
+
+        document.getElementById('jsonInput').addEventListener('drop', (e) => {
+            e.preventDefault();
+            e.target.classList.remove('drag-over');
+            
+            const file = e.dataTransfer.files[0];
+            if (file && file.type === 'application/json') {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    document.getElementById('jsonInput').value = event.target.result;
+                    updateJsonCharCount();
+                    formatJson();
+                };
+                reader.readAsText(file);
+            } else {
+                const errorTip = document.getElementById('jsonErrorTip');
+                errorTip.textContent = '❌ 请拖拽JSON格式的文件！';
+                errorTip.classList.add('error');
+                setTimeout(() => errorTip.textContent = '', 3000);
+            }
+        });
+
+        // ===================== 时间戳转换工具 =====================
+        function convertTimestampToTime() {
+            const timestamp = document.getElementById('timestampInput').value.trim();
+            const resultEl = document.getElementById('timestampResult');
+            
+            if (!timestamp) {
+                resultEl.textContent = '';
+                return;
+            }
+
+            try {
+                let ts = Number(timestamp);
+                // 处理10位时间戳（秒）转13位（毫秒）
+                if (timestamp.length === 10) {
+                    ts = ts * 1000;
+                }
+                // 处理13位以上的无效时间戳
+                if (timestamp.length > 13) {
+                    throw new Error('时间戳长度超过13位（最大支持毫秒级）');
+                }
+                
+                const date = new Date(ts);
+                if (isNaN(date.getTime())) {
+                    throw new Error('无效的时间戳');
+                }
+                
+                // 格式化时间
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                const hour = String(date.getHours()).padStart(2, '0');
+                const minute = String(date.getMinutes()).padStart(2, '0');
+                const second = String(date.getSeconds()).padStart(2, '0');
+                
+                const formattedTime = `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+                resultEl.textContent = `✅ 转换结果：${formattedTime}（${timestamp.length === 10 ? '秒级' : '毫秒级'}时间戳）`;
+                resultEl.classList.remove('error', 'warning');
+                resultEl.classList.add('success');
+                // 填充到时间输入框
+                document.getElementById('timeInput').value = formattedTime;
+            } catch (e) {
+                resultEl.textContent = `❌ 转换失败：${e.message}`;
+                resultEl.classList.remove('success', 'warning');
+                resultEl.classList.add('error');
+            }
+        }
+
+        function convertTimeToTimestamp() {
+            const timeStr = document.getElementById('timeInput').value.trim();
+            const resultEl = document.getElementById('timestampResult');
+            
+            if (!timeStr) {
+                resultEl.textContent = '';
+                return;
+            }
+
+            try {
+                // 处理常见时间格式
+                const date = new Date(timeStr);
+                if (isNaN(date.getTime())) {
+                    throw new Error('无效的时间格式，请使用：YYYY-MM-DD HH:mm:ss');
+                }
+                
+                const timestampMs = date.getTime(); // 毫秒级
+                const timestampS = Math.floor(timestampMs / 1000); // 秒级
+                
+                resultEl.textContent = `✅ 转换结果：秒级=${timestampS} | 毫秒级=${timestampMs}`;
+                resultEl.classList.remove('error', 'warning');
+                resultEl.classList.add('success');
+                // 填充到时间戳输入框（默认毫秒级）
+                document.getElementById('timestampInput').value = timestampMs;
+            } catch (e) {
+                resultEl.textContent = `❌ 转换失败：${e.message}`;
+                resultEl.classList.remove('success', 'warning');
+                resultEl.classList.add('error');
+            }
+        }
+
+        function fillCurrentTime() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hour = String(now.getHours()).padStart(2, '0');
+            const minute = String(now.getMinutes()).padStart(2, '0');
+            const second = String(now.getSeconds()).padStart(2, '0');
+            
+            const formattedTime = `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+            document.getElementById('timeInput').value = formattedTime;
+            convertTimeToTimestamp();
+        }
+
+        function clearTimestampAll() {
+            document.getElementById('timestampInput').value = '';
+            document.getElementById('timeInput').value = '';
+            document.getElementById('timestampResult').textContent = '';
+            document.getElementById('timestampResult').classList.remove('success', 'error', 'warning');
+        }
+
+        // ===================== 进制转换工具 =====================
+        function convertRadix() {
+            const input = document.getElementById('radixInput').value.trim();
+            const fromRadix = Number(document.getElementById('fromRadix').value);
+            const toRadix = Number(document.getElementById('toRadix').value);
+            const resultEl = document.getElementById('radixResult');
+            
+            if (!input) {
+                resultEl.textContent = '';
+                return;
+            }
+
+            try {
+                // 转换为十进制
+                let decimalNum;
+                if (fromRadix === 16 && input.startsWith('0x')) {
+                    decimalNum = parseInt(input, 16);
+                } else {
+                    decimalNum = parseInt(input, fromRadix);
+                }
+                
+                if (isNaN(decimalNum)) {
+                    throw new Error(`无法将 "${input}" 转换为${fromRadix}进制数字`);
+                }
+                
+                // 转换为目标进制
+                let result;
+                if (toRadix === 16) {
+                    result = decimalNum.toString(16).toUpperCase();
+                } else {
+                    result = decimalNum.toString(toRadix);
+                }
+                
+                resultEl.textContent = `✅ 转换结果：${result}（${toRadix}进制）`;
+                resultEl.classList.remove('error', 'warning');
+                resultEl.classList.add('success');
+            } catch (e) {
+                resultEl.textContent = `❌ 转换失败：${e.message}`;
+                resultEl.classList.remove('success', 'warning');
+                resultEl.classList.add('error');
+            }
+        }
+
+        function clearRadixAll() {
+            document.getElementById('radixInput').value = '';
+            document.getElementById('radixResult').textContent = '';
+            document.getElementById('radixResult').classList.remove('success', 'error', 'warning');
+        }
+
+        function copyRadixResult() {
+            const resultText = document.getElementById('radixResult').textContent;
+            if (!resultText.startsWith('✅')) {
+                const tip = document.getElementById('radixResult');
+                tip.textContent = '❌ 暂无有效结果可复制！';
+                tip.classList.remove('success', 'warning');
+                tip.classList.add('error');
+                setTimeout(() => convertRadix(), 2000);
+                return;
+            }
+            const result = resultText.split('：')[1].split('（')[0];
+            copyToClipboard(result, document.getElementById('radixResult'));
+        }
+
+        // ===================== 大小写转换工具 =====================
+        function updateCaseCharCount() {
+            const inputLen = document.getElementById('caseInput').value.trim().length;
+            document.getElementById('caseInputCharCount').textContent = `字符数：${inputLen}`;
+            
+            const outputLen = document.getElementById('caseOutput').value.trim().length;
+            document.getElementById('caseOutputCharCount').textContent = `字符数：${outputLen}`;
+        }
+
+        function toUpperCase() {
+            const input = document.getElementById('caseInput').value;
+            const output = document.getElementById('caseOutput');
+            output.value = input.toUpperCase();
+            updateCaseCharCount();
+            document.getElementById('caseTip').textContent = '✅ 已转换为全部大写！';
+            document.getElementById('caseTip').classList.add('success');
+        }
+
+        function toLowerCase() {
+            const input = document.getElementById('caseInput').value;
+            const output = document.getElementById('caseOutput');
+            output.value = input.toLowerCase();
+            updateCaseCharCount();
+            document.getElementById('caseTip').textContent = '✅ 已转换为全部小写！';
+            document.getElementById('caseTip').classList.add('success');
+        }
+
+        function toFirstUpperCase() {
+            const input = document.getElementById('caseInput').value;
+            const output = document.getElementById('caseOutput');
+            if (!input) {
+                output.value = '';
+                updateCaseCharCount();
+                return;
+            }
+            // 首字母大写，其余小写
+            const result = input.toLowerCase().replace(/^\w/, c => c.toUpperCase());
+            output.value = result;
+            updateCaseCharCount();
+            document.getElementById('caseTip').textContent = '✅ 已转换为首字母大写！';
+            document.getElementById('caseTip').classList.add('success');
+        }
+
+        function toReverseCase() {
+            const input = document.getElementById('caseInput').value;
+            const output = document.getElementById('caseOutput');
+            if (!input) {
+                output.value = '';
+                updateCaseCharCount();
+                return;
+            }
+            // 反转大小写
+            let result = '';
+            for (let i = 0; i < input.length; i++) {
+                const char = input[i];
+                if (char === char.toUpperCase()) {
+                    result += char.toLowerCase();
+                } else {
+                    result += char.toUpperCase();
+                }
+            }
+            output.value = result;
+            updateCaseCharCount();
+            document.getElementById('caseTip').textContent = '✅ 已反转大小写！';
+            document.getElementById('caseTip').classList.add('success');
+        }
+
+        function clearCaseAll() {
+            document.getElementById('caseInput').value = '';
+            document.getElementById('caseOutput').value = '';
+            document.getElementById('caseTip').textContent = '';
+            document.getElementById('caseTip').classList.remove('success', 'error');
+            updateCaseCharCount();
+        }
+
+        function copyCaseOutput() {
+            const outputText = document.getElementById('caseOutput').value;
+            copyToClipboard(outputText, document.getElementById('caseTip'));
+        }
+
+        // ===================== URL编解码工具 =====================
+        function updateUrlCharCount() {
+            const inputLen = document.getElementById('urlInput').value.trim().length;
+            document.getElementById('urlInputCharCount').textContent = `字符数：${inputLen}`;
+            
+            const outputLen = document.getElementById('urlOutput').value.trim().length;
+            document.getElementById('urlOutputCharCount').textContent = `字符数：${outputLen}`;
+        }
+
+        function urlEncode() {
+            const input = document.getElementById('urlInput').value;
+            const output = document.getElementById('urlOutput');
+            const tip = document.getElementById('urlTip');
+            
+            if (!input) {
+                output.value = '';
+                tip.textContent = '';
+                updateUrlCharCount();
+                return;
+            }
+
+            try {
+                const encoded = encodeURIComponent(input);
+                output.value = encoded;
+                tip.textContent = '✅ URL编码成功！';
+                tip.classList.add('success');
+                tip.classList.remove('error');
+            } catch (e) {
+                tip.textContent = `❌ 编码失败：${e.message}`;
+                tip.classList.add('error');
+                tip.classList.remove('success');
+            }
+            updateUrlCharCount();
+        }
+
+        function urlDecode() {
+            const input = document.getElementById('urlInput').value;
+            const output = document.getElementById('urlOutput');
+            const tip = document.getElementById('urlTip');
+            
+            if (!input) {
+                output.value = '';
+                tip.textContent = '';
+                updateUrlCharCount();
+                return;
+            }
+
+            try {
+                const decoded = decodeURIComponent(input);
+                output.value = decoded;
+                tip.textContent = '✅ URL解码成功！';
+                tip.classList.add('success');
+                tip.classList.remove('error');
+            } catch (e) {
+                tip.textContent = `❌ 解码失败：${e.message}（请检查编码格式）`;
+                tip.classList.add('error');
+                tip.classList.remove('success');
+            }
+            updateUrlCharCount();
+        }
+
+        function clearUrlAll() {
+            document.getElementById('urlInput').value = '';
+            document.getElementById('urlOutput').value = '';
+            document.getElementById('urlTip').textContent = '';
+            document.getElementById('urlTip').classList.remove('success', 'error');
+            updateUrlCharCount();
+        }
+
+        function copyUrlOutput() {
+            const outputText = document.getElementById('urlOutput').value;
+            copyToClipboard(outputText, document.getElementById('urlTip'));
+        }
+
+        // ===================== 通用工具函数 =====================
+        function copyToClipboard(text, tipEl) {
+            if (!text) {
+                tipEl.textContent = '❌ 暂无内容可复制！';
+                tipEl.classList.add('error');
+                tipEl.classList.remove('success');
+                setTimeout(() => tipEl.textContent = '', 2000);
+                return;
+            }
+
+            navigator.clipboard.writeText(text).then(() => {
                 // 显示动画提示
                 copyToast.style.animation = 'none';
                 copyToast.offsetHeight; // 触发重绘
                 copyToast.style.animation = 'copySuccess 1s ease forwards';
-                copyTip.textContent = '';
+                tipEl.textContent = '';
             }).catch(() => {
                 // 兼容低版本浏览器
                 const textArea = document.createElement('textarea');
-                textArea.value = outputText;
+                textArea.value = text;
                 document.body.appendChild(textArea);
                 textArea.select();
                 document.execCommand('copy');
@@ -576,103 +1164,28 @@
                 copyToast.style.animation = 'none';
                 copyToast.offsetHeight;
                 copyToast.style.animation = 'copySuccess 1s ease forwards';
-                copyTip.textContent = '';
+                tipEl.textContent = '';
             });
         }
 
-        // 下载JSON文件
-        function downloadJson() {
-            const outputText = jsonOutput.textContent || jsonOutput.innerText;
-            
-            if (!outputText) {
-                copyTip.textContent = '❌ 暂无内容可下载！';
-                copyTip.classList.add('error');
-                setTimeout(() => copyTip.textContent = '', 2000);
-                return;
-            }
-
-            // 创建Blob对象
-            const blob = new Blob([outputText], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            
-            // 创建下载链接
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `json_tool_${new Date().getTime()}.json`;
-            a.click();
-            
-            // 释放URL
-            URL.revokeObjectURL(url);
-            copyTip.textContent = '✅ 文件下载成功！';
-            copyTip.classList.add('success');
-            setTimeout(() => copyTip.textContent = '', 3000);
-        }
-
-        // 清空输入
-        function clearInput() {
-            jsonInput.value = '';
-            errorTip.textContent = '';
-            errorTip.classList.remove('error', 'success');
-            updateCharCount();
-        }
-
-        // 清空输出
-        function clearOutput() {
-            jsonOutput.innerHTML = '';
-            copyTip.textContent = '';
-            copyTip.classList.remove('error', 'success');
-            updateCharCount();
-        }
-
-        // 清空所有
-        function clearAll() {
-            clearInput();
-            clearOutput();
-        }
-
-        // 拖拽文件解析
-        jsonInput.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            jsonInput.classList.add('drag-over');
-        });
-
-        jsonInput.addEventListener('dragleave', () => {
-            jsonInput.classList.remove('drag-over');
-        });
-
-        jsonInput.addEventListener('drop', (e) => {
-            e.preventDefault();
-            jsonInput.classList.remove('drag-over');
-            
-            const file = e.dataTransfer.files[0];
-            if (file && file.type === 'application/json') {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    jsonInput.value = event.target.result;
-                    updateCharCount();
-                    formatJson(); // 自动格式化
-                };
-                reader.readAsText(file);
-            } else {
-                errorTip.textContent = '❌ 请拖拽JSON格式的文件！';
-                errorTip.classList.add('error');
-                setTimeout(() => errorTip.textContent = '', 3000);
-            }
-        });
-
         // 页面加载初始化
         window.onload = function() {
+            // 初始化JSON工具示例
             const exampleJson = {
-                "name": "ESA Pages JSON工具",
+                "name": "ESA Pages 全能工具箱",
                 "author": "参赛作品",
-                "features": ["格式化", "压缩", "语法高亮", "主题切换", "拖拽解析", "下载文件"],
-                "version": "2.0.0",
+                "tools": ["JSON工具", "时间戳转换", "进制转换", "大小写转换", "URL编解码"],
+                "version": "3.0.0",
                 "enabled": true,
                 "updateTime": new Date().toLocaleString()
             };
-            jsonInput.value = JSON.stringify(exampleJson);
-            updateCharCount();
+            document.getElementById('jsonInput').value = JSON.stringify(exampleJson);
+            updateJsonCharCount();
             formatJson();
+            
+            // 初始化字符计数
+            updateCaseCharCount();
+            updateUrlCharCount();
         };
     </script>
 </body>
